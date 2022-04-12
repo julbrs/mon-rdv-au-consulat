@@ -1,0 +1,30 @@
+{
+  "name": "mon-rdv-au-consulat",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "sst test",
+    "start": "sst start",
+    "build": "sst build",
+    "deploy": "sst deploy",
+    "remove": "sst remove"
+  },
+  "eslintConfig": {
+    "extends": [
+      "serverless-stack"
+    ]
+  },
+  "devDependencies": {
+    "@serverless-stack/cli": "0.69.5",
+    "@serverless-stack/resources": "0.69.5",
+    "@tsconfig/node14": "^1.0.1",
+    "@types/aws-lambda": "^8.10.70",
+    "@types/node": "<15.0.0",
+    "aws-cdk-lib": "2.15.0",
+    "typescript": "4.4.4"
+  },
+  "dependencies": {
+    "node-fetch": "^3.2.3",
+    "twitter-api-v2": "^1.11.3"
+  }
+}
