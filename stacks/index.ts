@@ -15,8 +15,6 @@ export default function main(app: sst.App): void {
     environment: {
       TWITTER_CONSUMER_KEY: process.env.TWITTER_CONSUMER_KEY!,
       TWITTER_CONSUMER_SECRET: process.env.TWITTER_CONSUMER_SECRET!,
-      TWITTER_OAUTH_TOKEN: process.env.TWITTER_OAUTH_TOKEN!,
-      TWITTER_OAUTH_TOKEN_SECRET: process.env.TWITTER_OAUTH_TOKEN_SECRET!,
     },
   });
 

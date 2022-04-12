@@ -1,12 +1,12 @@
 import { TwitterApi } from "twitter-api-v2";
+import { ConsulateZone } from "./types";
 
-const client = new TwitterApi({
-  appKey: process.env.TWITTER_CONSUMER_KEY!,
-  appSecret: process.env.TWITTER_CONSUMER_SECRET!,
-  accessToken: process.env.TWITTER_OAUTH_TOKEN!,
-  accessSecret: process.env.TWITTER_OAUTH_TOKEN_SECRET!,
-});
-
-export const postTweet = (text: string) => {
+export const postTweet = (consulateZone: ConsulateZone, text: string) => {
+  const client = new TwitterApi({
+    appKey: process.env.TWITTER_CONSUMER_KEY!,
+    appSecret: process.env.TWITTER_CONSUMER_SECRET!,
+    accessToken: consulateZone.twitterOauthToken,
+    accessSecret: consulateZone.twitterOauthTokenSecret,
+  });
   return client.v1.tweet(text);
 };

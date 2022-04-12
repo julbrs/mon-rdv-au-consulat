@@ -11,7 +11,7 @@ export const isoLocale = (date) => {
   return iso.slice(0, 19);
 };
 
-export const extractDynamicCalendar = (zone_id: string) => {
+const extractDynamicCalendar = (zone_id: string) => {
   const service = data.value.services.find((s) => zone_id === s.zone_id);
   if (service !== undefined) {
     return service.zone.dynamic_calendar;
@@ -19,7 +19,7 @@ export const extractDynamicCalendar = (zone_id: string) => {
   throw new Error(`no service found for ${zone_id}`);
 };
 
-export const getServiceName = (zone_id: string) => {
+const getServiceName = (zone_id: string) => {
   const service = data.value.services.find((s) => zone_id === s.zone_id);
   if (service !== undefined) {
     return service.label;

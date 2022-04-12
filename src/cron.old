@@ -1,0 +1,148 @@
+const fetch = require("node-fetch");
+
+const API = "https://api.consulat.gouv.fr/api/team";
+const TEAM = "61f924e90b0582a933ff3e7c";
+const ZONE_ID = "623e3c5319ec2e40dcf76397";
+
+const isoLocale = (date) => {
+  const z = date.getTimezoneOffset() * 60 * 1000;
+  let tLocal = date - z;
+  tLocal = new Date(tLocal);
+  let iso = tLocal.toISOString();
+  return iso.slice(0, 19);
+};
+
+const extractAvailability = async (session_id, date) => {
+  const dispo = await fetch(
+    `${API}/${TEAM}/reservations/avaibility?` +
+      new URLSearchParams({
+        name: "Demande de passeport/CNI",
+        date,
+        places: 1,
+        maxCapacity: 1,
+        matching: null,
+        sessionId: session_id,
+      }),
+    {
+      body: null,
+      method: "GET",
+    }
+  );
+
+  const dispoData = await dispo.json();
+  console.log(`${date} ${dispoData.length}`);
+};
+
+const app = async () => {
+  //setup session
+  const session = await fetch(`${API}/${TEAM}/reservations-session`, {
+    body: null,
+    method: "POST",
+  });
+  const sessionData = await session.json();
+  const session_id = sessionData._id;
+
+  //   const step1 = await fetch(
+  //     `${API}/${TEAM}/reservations-session/${session_id}/update-dynamic-steps`,
+  //     {
+  //       headers: {
+  //         "content-type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         key: "slotsSteps",
+  //         steps: [
+  //           {
+  //             stepType: "slotsStep",
+  //             name: "Demande de passeport/CNI",
+  //             numberOfSlots: 1,
+  //             dynamicStepIndex: 0,
+  //             zone_id: ZONE_ID,
+  //             value: {
+  //               lastSelectedDate: "",
+  //               label: "Demande de passeport/CNI",
+  //               accessibleCalendar: false,
+  //               hasSwitchedCalendar: false,
+  //               slots: {},
+  //             },
+  //           },
+  //         ],
+  //       }),
+  //       method: "POST",
+  //     }
+  //   );
+
+  //   const step1Data = await step1.json();
+  //   console.log(step1Data);
+
+  let start = new Date();
+  let end = new Date();
+  end.setDate(end.getDate() + 46);
+  console.log(
+    `Retrieve exclude days from ${isoLocale(start)} to ${isoLocale(end)}`
+  );
+
+  const days = await fetch(`${API}/${TEAM}/reservations/exclude-days`, {
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      start: isoLocale(start),
+      end: isoLocale(end),
+      session: { [ZONE_ID]: 1 },
+    }),
+    method: "POST",
+  });
+  const excludeDays = await days.json();
+
+  const allDays = [];
+  while (start < end) {
+    allDays.push(start.toISOString().substring(0, 10));
+    start.setDate(start.getDate() + 1);
+  }
+
+  const possibleDays = allDays.filter((day) => !excludeDays.includes(day));
+
+  console.log(possibleDays);
+
+  // const step2 = await fetch(
+  //   `${API}/${TEAM}/reservations-session/${session_id}/update-step-value`,
+  //   {
+  //     headers: {
+  //       "content-type": "application/json",
+  //     },
+  //     body: JSON.stringify(),
+  //     method: "POST",
+  //   }
+  // );
+
+  //   const step3 = await fetch(
+  //     `${API}/${TEAM}/reservations-session/${session_id}/update-step-value`,
+  //     {
+  //       headers: {
+  //         "content-type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         key: "importantInformationStep",
+  //         value: { readInformations: true },
+  //         stepIndex: 1,
+  //       }),
+  //       method: "POST",
+  //     }
+  //   );
+  //   const step3Data = await step3.json();
+  //   console.log(step3Data);
+
+  let start2 = new Date();
+  start2.setDate(start2.getDate() + 45);
+  let end2 = new Date();
+  end2.setDate(end2.getDate() + 90);
+  while (start2 < end2) {
+    await extractAvailability(
+      session_id,
+      start2.toISOString().substring(0, 10)
+    );
+    start2.setDate(start2.getDate() + 1);
+  }
+};
+
+app();
