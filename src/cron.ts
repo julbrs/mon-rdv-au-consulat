@@ -53,12 +53,16 @@ const checkSingleZone = async (consulateZone: ConsulateZone) => {
     );
 
     const allDays = [];
-    while (start < end) {
+    while (start <= end) {
       allDays.push(start.toISOString().substring(0, 10));
       start.setDate(start.getDate() + 1);
     }
 
     const possibleDays = allDays.filter((day) => !excludeDays.includes(day));
+
+    console.log(
+      `possibleDays for ${consulateZone.consulateName}:  ${possibleDays}`
+    );
 
     const availabilities = await Promise.all(
       possibleDays.map(async (day) => {
