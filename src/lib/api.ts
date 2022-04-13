@@ -30,13 +30,13 @@ export const selectService = async (
         steps: [
           {
             stepType: "slotsStep",
-            //name: getServiceName(zone_id),
+            name: consulateZone.zoneName,
             numberOfSlots: 1,
             dynamicStepIndex: 0,
             zone_id: consulateZone.zoneId,
             value: {
               lastSelectedDate: "",
-              //label: getServiceName(zone_id),
+              label: consulateZone.zoneName,
               accessibleCalendar: false,
               hasSwitchedCalendar: false,
               slots: {},
@@ -96,11 +96,11 @@ export const extractAvailabilities = async (
   consulateZone: ConsulateZone,
   date: string
 ) => {
-  const dispo = await fetch(
+  const available = await fetch(
     `${API}/${consulateZone.teamId}/reservations/avaibility?` +
       // @ts-ignore
       new URLSearchParams({
-        //name: getServiceName(zone_id),
+        name: consulateZone.zoneName,
         date,
         places: 1,
         maxCapacity: 1,
@@ -113,5 +113,5 @@ export const extractAvailabilities = async (
     }
   );
 
-  return dispo.json();
+  return available.json();
 };

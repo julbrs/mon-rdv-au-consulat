@@ -106,15 +106,13 @@ const checkSingleZone = async (consulateZone: ConsulateZone) => {
         .slice(0, 5)
         .map((e: any) => `le ${e.day} à ${e.time}`)
         .join(", ")} ➡️ ${consulateZone.url}`;
-      const tweetResult = await postTweet(consulateZone, text);
-      console.log(tweetResult);
-      console.log(
-        `Tweet posté! ${tweetResult} pour ${consulateZone.consulateName}`
-      );
+      console.log(`Envoi tweet pour ${consulateZone.consulateName}: ${text}`);
+      await postTweet(consulateZone, text);
     }
     return flat.length;
   } catch (err) {
-    console.error(err);
+    // @ts-ignore
+    console.error(`Erreur pour ${consulateZone.consulateName}: ${err.message}`);
     return 0;
   }
 };
