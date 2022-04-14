@@ -22,7 +22,7 @@ export default class MyStack extends sst.Stack {
       schedule: "rate(5 minutes)",
       job: {
         handler: "src/cron.main",
-        timeout: 20,
+        timeout: 10,
         environment: { TABLE: table.tableName },
         permissions: [table],
       },

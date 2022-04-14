@@ -1,6 +1,7 @@
 import fetch from "node-fetch";
 import { ConsulateZone } from "./types";
 import { isoLocale } from "./utils";
+import axios from "axios";
 
 const API = "https://api.consulat.gouv.fr/api/team";
 
@@ -96,22 +97,28 @@ export const extractAvailabilities = async (
   consulateZone: ConsulateZone,
   date: string
 ) => {
-  const available = await fetch(
-    `${API}/${consulateZone.teamId}/reservations/avaibility?` +
-      // @ts-ignore
-      new URLSearchParams({
-        name: consulateZone.zoneName,
-        date,
-        places: 1,
-        maxCapacity: 1,
-        matching: "",
-        sessionId: session_id,
-      }),
-    {
-      body: null,
-      method: "GET",
+  try {
+    const available = await axios.get(
+      `${API}/${consulateZone.teamId}/reservations/avaibility`,
+      {
+        params: {
+          name: consulateZone.zoneName,
+          date,
+          places: 1,
+          maxCapacity: 1,
+          matching: "",
+          sessionId: session_id,
+        },
+        timeout: 800,
+      }
+    );
+    return available.data;
+  } catch (err) {
+    if (err instanceof Error) {
+      console.log(`${consulateZone.consulateName} - ${date}: ${err.message}`);
+    } else {
+      console.log(`${consulateZone.consulateName} - ${date}: ${err}`);
     }
-  );
-
-  return available.json();
+    return [];
+  }
 };

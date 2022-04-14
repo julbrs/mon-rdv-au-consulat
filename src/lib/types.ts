@@ -7,4 +7,5 @@ export interface ConsulateZone {
   twitterOauthTokenSecret: string;
   days: number;
   url: string;
+  active: boolean;
 }

@@ -24,10 +24,17 @@ export const main = async () => {
     // @ts-ignore
     consulateZones.Items?.map(async (dynamoConsulateZone) => {
       const consulateZone = unmarshall(dynamoConsulateZone) as ConsulateZone;
-      return {
-        consulate: consulateZone.consulateName,
-        result: await checkSingleZone(consulateZone),
-      };
+      if (consulateZone.active) {
+        return {
+          consulate: consulateZone.consulateName,
+          result: await checkSingleZone(consulateZone),
+        };
+      } else {
+        return {
+          consulate: consulateZone.consulateName,
+          result: "inactive",
+        };
+      }
     })
   );
 };
@@ -59,10 +66,6 @@ const checkSingleZone = async (consulateZone: ConsulateZone) => {
     }
 
     const possibleDays = allDays.filter((day) => !excludeDays.includes(day));
-
-    console.log(
-      `possibleDays for ${consulateZone.consulateName}:  ${possibleDays}`
-    );
 
     const availabilities = await Promise.all(
       possibleDays.map(async (day) => {
