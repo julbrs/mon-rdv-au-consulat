@@ -2,15 +2,32 @@ import fetch from "node-fetch";
 import { ConsulateZone } from "./types";
 import { isoLocale } from "./utils";
 import axios from "axios";
+import * as cheerio from "cheerio";
 
 const API = "https://api.consulat.gouv.fr/api/team";
 
-export const startSession = async (consulateZone: ConsulateZone) => {
+export const extractCSRF = async (consulateZone: ConsulateZone) => {
+  const result = await axios.get(consulateZone.url);
+  const data = cheerio.load(result.data);
+  const script = (data("script")[1].children[0] as any).data;
+  let nuxt: any;
+  eval(script.replace("window.__NUXT__", "nuxt"));
+  return nuxt.data[0].csrf;
+};
+
+export const startSession = async (
+  consulateZone: ConsulateZone,
+  csrf: string
+) => {
   const session = await fetch(
     `${API}/${consulateZone.teamId}/reservations-session`,
     {
       body: null,
       method: "POST",
+      headers: {
+        "x-csrf-token": csrf,
+        "x-troov-web": "com.troov.web",
+      },
     }
   );
   return session.json();
@@ -55,18 +72,21 @@ export const selectService = async (
 export const extractExcludeDays = async (
   start: Date,
   end: Date,
-  consulateZone: ConsulateZone
+  consulateZone: ConsulateZone,
+  session: string
 ) => {
   const response = await fetch(
     `${API}/${consulateZone.teamId}/reservations/exclude-days`,
     {
       headers: {
         "content-type": "application/json",
+        "x-troov-web": "com.troov.web",
       },
       body: JSON.stringify({
         start: isoLocale(start),
         end: isoLocale(end),
         session: { [consulateZone.zoneId]: 1 },
+        sessionId: session,
       }),
       method: "POST",
     }
@@ -89,7 +109,7 @@ export const updateStepValue = async (
       method: "POST",
     }
   );
-  return await result.json();
+  return result.json();
 };
 
 export const extractAvailabilities = async (
@@ -108,6 +128,9 @@ export const extractAvailabilities = async (
           maxCapacity: 1,
           matching: "",
           sessionId: session_id,
+        },
+        headers: {
+          "x-troov-web": "com.troov.web",
         },
         timeout: 800,
       }

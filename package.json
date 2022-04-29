@@ -27,6 +27,7 @@
     "@aws-sdk/client-dynamodb": "^3.67.0",
     "@aws-sdk/util-dynamodb": "^3.67.0",
     "axios": "^0.26.1",
+    "cheerio": "^1.0.0-rc.10",
     "node-fetch": "^3.2.3",
     "twitter-api-v2": "^1.11.3"
   }

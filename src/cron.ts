@@ -3,6 +3,7 @@ import {
   selectService,
   extractExcludeDays,
   extractAvailabilities,
+  extractCSRF,
 } from "./lib/api";
 
 import { postTweet } from "./lib/twitter";
@@ -11,9 +12,6 @@ import { ConsulateZone } from "./lib/types";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 
 const ddbClient = new DynamoDBClient({});
-
-//const ZONE_ID = "623e3c5319ec2e40dcf76397"; // passeport
-//const ZONE_ID = "61f955a5456683ff9569d0bc"; // etat civil
 
 export const main = async () => {
   const params = {
@@ -41,8 +39,11 @@ export const main = async () => {
 
 const checkSingleZone = async (consulateZone: ConsulateZone) => {
   try {
+    // get CSRF
+    const csrf = await extractCSRF(consulateZone);
+
     //start session
-    const sessionData: any = await startSession(consulateZone);
+    const sessionData: any = await startSession(consulateZone, csrf);
     const session_id = sessionData._id;
 
     // select the right service
@@ -56,7 +57,8 @@ const checkSingleZone = async (consulateZone: ConsulateZone) => {
     const excludeDays: any = await extractExcludeDays(
       start,
       end,
-      consulateZone
+      consulateZone,
+      session_id
     );
 
     const allDays = [];
