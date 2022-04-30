@@ -12,7 +12,6 @@ export default class MyStack extends sst.Stack {
         consulateName: TableFieldType.STRING,
         twitterOauthToken: TableFieldType.STRING,
         twitterOauthTokenSecret: TableFieldType.STRING,
-        days: TableFieldType.NUMBER,
         url: TableFieldType.STRING,
       },
       primaryIndex: { partitionKey: "zoneId" },

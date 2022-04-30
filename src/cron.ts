@@ -3,7 +3,7 @@ import {
   selectService,
   extractExcludeDays,
   extractAvailabilities,
-  extractCSRF,
+  extractConfig,
 } from "./lib/api";
 
 import { postTweet } from "./lib/twitter";
@@ -39,20 +39,20 @@ export const main = async () => {
 
 const checkSingleZone = async (consulateZone: ConsulateZone) => {
   try {
-    // get CSRF
-    const csrf = await extractCSRF(consulateZone);
+    // get config fron homepage
+    const config = await extractConfig(consulateZone);
 
     //start session
-    const sessionData: any = await startSession(consulateZone, csrf);
+    const sessionData: any = await startSession(consulateZone, config.csrf);
     const session_id = sessionData._id;
 
     // select the right service
-    await selectService(session_id, consulateZone);
+    await selectService(session_id, consulateZone, config);
 
     //exclude days
     const start = new Date();
     const end = new Date();
-    end.setDate(end.getDate() + consulateZone.days);
+    end.setDate(end.getDate() + config.days);
 
     const excludeDays: any = await extractExcludeDays(
       start,
@@ -60,7 +60,6 @@ const checkSingleZone = async (consulateZone: ConsulateZone) => {
       consulateZone,
       session_id
     );
-
     const allDays = [];
     while (start <= end) {
       allDays.push(start.toISOString().substring(0, 10));
@@ -73,7 +72,12 @@ const checkSingleZone = async (consulateZone: ConsulateZone) => {
       possibleDays.map(async (day) => {
         return {
           day,
-          times: await extractAvailabilities(session_id, consulateZone, day),
+          times: await extractAvailabilities(
+            session_id,
+            consulateZone,
+            config,
+            day
+          ),
         };
       })
     );
@@ -101,7 +105,7 @@ const checkSingleZone = async (consulateZone: ConsulateZone) => {
     });
     if (flat.length === 0) {
       console.log(
-        `Pas de créneau disponible dans les prochains ${consulateZone.days} jours 😢 sur ${consulateZone.consulateName}`
+        `Pas de créneau disponible dans les prochains ${config.days} jours 😢 sur ${consulateZone.consulateName}`
       );
       return 0;
     } else {
@@ -110,12 +114,13 @@ const checkSingleZone = async (consulateZone: ConsulateZone) => {
       } au total) \n${flat
         .slice(0, 5)
         .map((e: any) => `le ${e.day} à ${e.time}`)
-        .join(", ")} ➡️ ${consulateZone.url}`;
+        .join(", ")} ➡️ ${consulateZone.url}?name=${encodeURI(config.name)}`;
       console.log(`Envoi tweet pour ${consulateZone.consulateName}: ${text}`);
       await postTweet(consulateZone, text);
     }
     return flat.length;
   } catch (err) {
+    //console.error(err);
     // @ts-ignore
     console.error(`Erreur pour ${consulateZone.consulateName}: ${err.message}`);
     return 0;

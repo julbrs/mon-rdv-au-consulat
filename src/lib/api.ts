@@ -1,72 +1,79 @@
-import fetch from "node-fetch";
-import { ConsulateZone } from "./types";
+import { ConsulateZone, Config } from "./types";
 import { isoLocale } from "./utils";
 import axios from "axios";
 import * as cheerio from "cheerio";
 
 const API = "https://api.consulat.gouv.fr/api/team";
 
-export const extractCSRF = async (consulateZone: ConsulateZone) => {
+export const extractConfig = async (consulateZone: ConsulateZone) => {
   const result = await axios.get(consulateZone.url);
   const data = cheerio.load(result.data);
   const script = (data("script")[1].children[0] as any).data;
   let nuxt: any;
   eval(script.replace("window.__NUXT__", "nuxt"));
-  return nuxt.data[0].csrf;
+  const configRaw = nuxt.data[0].publicTeam.reservations_shop_availabilty.find(
+    (item: any) => item._id === consulateZone.zoneId
+  );
+  const config: Config = {
+    csrf: nuxt.data[0].csrf,
+    days: configRaw.dynamic_calendar.end.value,
+    name: configRaw.name,
+  };
+  return config;
 };
 
 export const startSession = async (
   consulateZone: ConsulateZone,
   csrf: string
 ) => {
-  const session = await fetch(
+  const session = await axios.post(
     `${API}/${consulateZone.teamId}/reservations-session`,
+    null,
     {
-      body: null,
-      method: "POST",
       headers: {
         "x-csrf-token": csrf,
         "x-troov-web": "com.troov.web",
       },
     }
   );
-  return session.json();
+  return session.data;
 };
 
 export const selectService = async (
   session_id: string,
-  consulateZone: ConsulateZone
+  consulateZone: ConsulateZone,
+  config: Config
 ) => {
-  const answer = await fetch(
+  const answer = await axios.post(
     `${API}/${consulateZone.teamId}/reservations-session/${session_id}/update-dynamic-steps`,
+    {
+      key: "slotsSteps",
+      steps: [
+        {
+          stepType: "slotsStep",
+          name: config.name,
+          numberOfSlots: 1,
+          dynamicStepIndex: 0,
+          zone_id: consulateZone.zoneId,
+          value: {
+            lastSelectedDate: "",
+            label: config.name,
+            accessibleCalendar: false,
+            hasSwitchedCalendar: false,
+            slots: {},
+          },
+        },
+      ],
+    },
     {
       headers: {
         "content-type": "application/json",
+        "x-troov-web": "com.troov.web",
       },
-      body: JSON.stringify({
-        key: "slotsSteps",
-        steps: [
-          {
-            stepType: "slotsStep",
-            name: consulateZone.zoneName,
-            numberOfSlots: 1,
-            dynamicStepIndex: 0,
-            zone_id: consulateZone.zoneId,
-            value: {
-              lastSelectedDate: "",
-              label: consulateZone.zoneName,
-              accessibleCalendar: false,
-              hasSwitchedCalendar: false,
-              slots: {},
-            },
-          },
-        ],
-      }),
-      method: "POST",
     }
   );
 
-  return answer.json();
+  return answer.data;
 };
 
 export const extractExcludeDays = async (
@@ -75,23 +82,22 @@ export const extractExcludeDays = async (
   consulateZone: ConsulateZone,
   session: string
 ) => {
-  const response = await fetch(
+  const response = await axios.post(
     `${API}/${consulateZone.teamId}/reservations/exclude-days`,
+    {
+      start: isoLocale(start),
+      end: isoLocale(end),
+      session: { [consulateZone.zoneId]: 1 },
+      sessionId: session,
+    },
     {
       headers: {
         "content-type": "application/json",
         "x-troov-web": "com.troov.web",
       },
-      body: JSON.stringify({
-        start: isoLocale(start),
-        end: isoLocale(end),
-        session: { [consulateZone.zoneId]: 1 },
-        sessionId: session,
-      }),
-      method: "POST",
     }
   );
-  return response.json();
+  return response.data;
 };
 
 export const updateStepValue = async (
@@ -99,22 +105,23 @@ export const updateStepValue = async (
   data: string,
   consulateZone: ConsulateZone
 ) => {
-  const result = await fetch(
+  const result = await axios.post(
     `${API}/${consulateZone.teamId}/reservations-session/${session_id}/update-step-value`,
+    data,
     {
       headers: {
         "content-type": "application/json",
+        "x-troov-web": "com.troov.web",
       },
-      body: JSON.stringify(data),
-      method: "POST",
     }
   );
-  return result.json();
+  return result.data;
 };
 
 export const extractAvailabilities = async (
   session_id: string,
   consulateZone: ConsulateZone,
+  config: Config,
   date: string
 ) => {
   try {
@@ -122,7 +129,7 @@ export const extractAvailabilities = async (
       `${API}/${consulateZone.teamId}/reservations/avaibility`,
       {
         params: {
-          name: consulateZone.zoneName,
+          name: config.name,
           date,
           places: 1,
           maxCapacity: 1,
