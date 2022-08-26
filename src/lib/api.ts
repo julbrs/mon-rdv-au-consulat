@@ -126,7 +126,7 @@ export const extractAvailabilities = async (
 ) => {
   try {
     const available = await axios.get(
-      `${API}/${consulateZone.teamId}/reservations/avaibility`,
+      `${API}/${consulateZone.teamId}/reservations/availability`,
       {
         params: {
           name: config.name,
