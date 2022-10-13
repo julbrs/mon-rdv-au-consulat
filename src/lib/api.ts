@@ -8,7 +8,16 @@ const API = "https://api.consulat.gouv.fr/api/team";
 export const extractConfig = async (consulateZone: ConsulateZone) => {
   const result = await axios.get(consulateZone.url);
   const data = cheerio.load(result.data);
-  const script = (data("script")[1].children[0] as any).data;
+
+  // extract the first <script> tag that have a children (no src attr)
+  const nuxt_script = data("script")
+    .filter((i, el) => {
+      return el.children.length === 1;
+    })
+    .toArray();
+
+  const script = (nuxt_script[0].children[0] as any).data;
+
   let nuxt: any;
   eval(script.replace("window.__NUXT__", "nuxt"));
   const configRaw = nuxt.data[0].publicTeam.reservations_shop_availabilty.find(
