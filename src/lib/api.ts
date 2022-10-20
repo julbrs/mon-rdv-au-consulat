@@ -1,7 +1,8 @@
 import { ConsulateZone, Config } from "./types";
 import { isoLocale } from "./utils";
-import axios from "axios";
+import axios, { AxiosInstance } from "axios";
 import * as cheerio from "cheerio";
+import { getAxiosInstance } from "./axios";
 
 const API = "https://api.consulat.gouv.fr/api/team";
 
@@ -25,36 +26,34 @@ export const extractConfig = async (consulateZone: ConsulateZone) => {
   );
   const config: Config = {
     csrf: nuxt.data[0].csrf,
+    hmc_key: nuxt.config.HMC_KEY,
     days: configRaw.dynamic_calendar.end.value,
     name: configRaw.name,
   };
+  console.log("Get a config!");
   return config;
 };
 
 export const startSession = async (
   consulateZone: ConsulateZone,
-  csrf: string
+  client: AxiosInstance
 ) => {
-  const session = await axios.post(
-    `${API}/${consulateZone.teamId}/reservations-session`,
-    null,
-    {
-      headers: {
-        "x-csrf-token": csrf,
-        "x-troov-web": "com.troov.web",
-      },
-    }
+  const session = await client.post(
+    `${consulateZone.teamId}/reservations-session`,
+    { sessionId: null }
   );
+  console.log("Get a session!");
   return session.data;
 };
 
 export const selectService = async (
   session_id: string,
   consulateZone: ConsulateZone,
-  config: Config
+  config: Config,
+  client: AxiosInstance
 ) => {
-  const answer = await axios.post(
-    `${API}/${consulateZone.teamId}/reservations-session/${session_id}/update-dynamic-steps`,
+  const answer = await client.post(
+    `${consulateZone.teamId}/reservations-session/${session_id}/update-dynamic-steps`,
     {
       key: "slotsSteps",
       steps: [
@@ -73,15 +72,9 @@ export const selectService = async (
           },
         },
       ],
-    },
-    {
-      headers: {
-        "content-type": "application/json",
-        "x-troov-web": "com.troov.web",
-      },
     }
   );
-
+  console.log("Get a service!");
   return answer.data;
 };
 
@@ -89,53 +82,33 @@ export const extractExcludeDays = async (
   start: Date,
   end: Date,
   consulateZone: ConsulateZone,
-  session: string
+  session: string,
+  client: AxiosInstance
 ) => {
-  const response = await axios.post(
-    `${API}/${consulateZone.teamId}/reservations/exclude-days`,
+  const response = await client.post(
+    `${consulateZone.teamId}/reservations/exclude-days`,
     {
       start: isoLocale(start),
       end: isoLocale(end),
       session: { [consulateZone.zoneId]: 1 },
       sessionId: session,
-    },
-    {
-      headers: {
-        "content-type": "application/json",
-        "x-troov-web": "com.troov.web",
-      },
     }
   );
-  return response.data;
-};
+  console.log("Get exclude days!");
 
-export const updateStepValue = async (
-  session_id: string,
-  data: string,
-  consulateZone: ConsulateZone
-) => {
-  const result = await axios.post(
-    `${API}/${consulateZone.teamId}/reservations-session/${session_id}/update-step-value`,
-    data,
-    {
-      headers: {
-        "content-type": "application/json",
-        "x-troov-web": "com.troov.web",
-      },
-    }
-  );
-  return result.data;
+  return response.data;
 };
 
 export const extractAvailabilities = async (
   session_id: string,
   consulateZone: ConsulateZone,
   config: Config,
-  date: string
+  date: string,
+  client: AxiosInstance
 ) => {
   try {
-    const available = await axios.get(
-      `${API}/${consulateZone.teamId}/reservations/availability`,
+    const available = await client.get(
+      `${consulateZone.teamId}/reservations/availability`,
       {
         params: {
           name: config.name,
@@ -144,9 +117,6 @@ export const extractAvailabilities = async (
           maxCapacity: 1,
           matching: "",
           sessionId: session_id,
-        },
-        headers: {
-          "x-troov-web": "com.troov.web",
         },
         timeout: 800,
       }

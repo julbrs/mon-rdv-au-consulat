@@ -10,6 +10,7 @@ export interface ConsulateZone {
 
 export interface Config {
   csrf: string;
+  hmc_key: string;
   days: number;
   name: string;
 }
