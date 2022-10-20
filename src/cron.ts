@@ -10,6 +10,7 @@ import { postTweet } from "./lib/twitter";
 import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
 import { ConsulateZone } from "./lib/types";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
+import { getAxiosInstance } from "./lib/axios";
 
 const ddbClient = new DynamoDBClient({});
 
@@ -39,15 +40,18 @@ export const main = async () => {
 
 const checkSingleZone = async (consulateZone: ConsulateZone) => {
   try {
-    // get config fron homepage
+    // get config from homepage
     const config = await extractConfig(consulateZone);
 
+    // build axios client
+    const client = await getAxiosInstance(config);
+
     //start session
-    const sessionData: any = await startSession(consulateZone, config.csrf);
+    const sessionData: any = await startSession(consulateZone, client);
     const session_id = sessionData._id;
 
     // select the right service
-    await selectService(session_id, consulateZone, config);
+    await selectService(session_id, consulateZone, config, client);
 
     //exclude days
     const start = new Date();
@@ -58,7 +62,8 @@ const checkSingleZone = async (consulateZone: ConsulateZone) => {
       start,
       end,
       consulateZone,
-      session_id
+      session_id,
+      client
     );
     const allDays = [];
     while (start <= end) {
@@ -76,7 +81,8 @@ const checkSingleZone = async (consulateZone: ConsulateZone) => {
             session_id,
             consulateZone,
             config,
-            day
+            day,
+            client
           ),
         };
       })
