@@ -6,6 +6,7 @@ import {
   extractConfig,
 } from "./lib/api";
 
+import { Table } from "@serverless-stack/node/table";
 import { postTweet } from "./lib/twitter";
 import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
 import { ConsulateZone } from "./lib/types";
@@ -16,7 +17,7 @@ const ddbClient = new DynamoDBClient({});
 
 export const main = async () => {
   const params = {
-    TableName: process.env.TABLE,
+    TableName: Table.Zone.tableName,
   };
   const consulateZones = await ddbClient.send(new ScanCommand(params));
   return Promise.all(
@@ -65,7 +66,7 @@ const checkSingleZone = async (consulateZone: ConsulateZone) => {
       session_id,
       client
     );
-    const allDays = [];
+    const allDays: string[] = [];
     while (start <= end) {
       allDays.push(start.toISOString().substring(0, 10));
       start.setDate(start.getDate() + 1);

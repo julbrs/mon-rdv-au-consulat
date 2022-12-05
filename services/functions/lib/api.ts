@@ -2,7 +2,6 @@ import { ConsulateZone, Config } from "./types";
 import { isoLocale } from "./utils";
 import axios, { AxiosInstance } from "axios";
 import * as cheerio from "cheerio";
-import { getAxiosInstance } from "./axios";
 
 const API = "https://api.consulat.gouv.fr/api/team";
 
@@ -10,10 +9,10 @@ export const extractConfig = async (consulateZone: ConsulateZone) => {
   const result = await axios.get(consulateZone.url);
   const data = cheerio.load(result.data);
 
-  // extract the first <script> tag that have a children (no src attr)
+  // extract the first <script> tag that have a children (no src attr) with no attributes
   const nuxt_script = data("script")
     .filter((i, el) => {
-      return el.children.length === 1;
+      return el.attribs.type === undefined && el.children.length === 1;
     })
     .toArray();
 
@@ -30,7 +29,6 @@ export const extractConfig = async (consulateZone: ConsulateZone) => {
     days: configRaw.dynamic_calendar.end.value,
     name: configRaw.name,
   };
-  console.log("Get a config!");
   return config;
 };
 

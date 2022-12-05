@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "test": "sst test",
+    "test": "sst bind -- vitest run",
     "start": "sst start",
     "build": "sst build",
     "deploy": "sst deploy",
@@ -15,23 +15,24 @@
     ]
   },
   "devDependencies": {
-    "@serverless-stack/cli": "0.69.5",
-    "@serverless-stack/resources": "0.69.5",
-    "@tsconfig/node14": "^1.0.1",
-    "@types/aws-lambda": "^8.10.70",
-    "@types/jest": "^27.4.1",
-    "@types/node": "<15.0.0",
-    "aws-cdk-lib": "2.15.0",
-    "typescript": "4.4.4"
+    "@serverless-stack/cli": "1.18.4",
+    "@serverless-stack/resources": "1.18.4",
+    "@tsconfig/node16": "^1.0.3",
+    "@types/aws-lambda": "^8.10.109",
+    "aws-cdk-lib": "2.50.0",
+    "typescript": "^4.9.3",
+    "vite": "^3.2.4",
+    "vitest": "^0.25.3"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.67.0",
-    "@aws-sdk/util-dynamodb": "^3.67.0",
-    "@peculiar/webcrypto": "^1.4.0",
-    "axios": "^0.26.1",
+    "@aws-sdk/client-dynamodb": "^3.223.0",
+    "@aws-sdk/util-dynamodb": "^3.223.0",
+    "@peculiar/webcrypto": "^1.4.1",
+    "@serverless-stack/node": "^1.18.4",
+    "axios": "^1.2.0",
     "cheerio": "^1.0.0-rc.10",
-    "dayjs": "^1.11.5",
+    "dayjs": "^1.11.6",
     "debug": "^4.3.4",
-    "twitter-api-v2": "^1.11.3"
+    "twitter-api-v2": "^1.12.9"
   }
 }
