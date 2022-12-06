@@ -27,11 +27,9 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.223.0",
     "@aws-sdk/util-dynamodb": "^3.223.0",
-    "@peculiar/webcrypto": "^1.4.1",
     "@serverless-stack/node": "^1.18.4",
-    "axios": "^1.2.0",
+    "axios": "^1.2.1",
     "cheerio": "^1.0.0-rc.10",
-    "dayjs": "^1.11.6",
     "debug": "^4.3.4",
     "twitter-api-v2": "^1.12.9"
   }

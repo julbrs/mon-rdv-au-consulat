@@ -26,9 +26,10 @@ describe("test extractConfig", () => {
 
     const config = await extractConfig(consulateZone);
     expect(config).toStrictEqual({
-      csrf: "evvzOYAQme4XyPjIwSlSj6ntrHA3sZSg",
-      days: 45,
-      hmc_key: undefined,
+      csrf: "lZ7Nz9aLAmFB0PBCatt0YBqpJyjHEjH4",
+      days: 42,
+      XGouvAppId:
+        "$argon2id$v=19$m=65536,t=3,p=4$P1gZiLnu1DNTa0flSf5hzQ$7aerTzudk5tHpIcIP22NjIPJ36u7ki+ptcbI4UMwCw0",
       name: "Demande de passeport/CNI",
     });
 

@@ -20,12 +20,13 @@ export const extractConfig = async (consulateZone: ConsulateZone) => {
 
   let nuxt: any;
   eval(script.replace("window.__NUXT__", "nuxt"));
+
   const configRaw = nuxt.data[0].publicTeam.reservations_shop_availabilty.find(
     (item: any) => item._id === consulateZone.zoneId
   );
   const config: Config = {
-    csrf: nuxt.data[0].csrf,
-    hmc_key: nuxt.config.HMC_KEY,
+    csrf: nuxt.state.user.cs.value,
+    XGouvAppId: nuxt.state.layout["x-gouv-app-id"],
     days: configRaw.dynamic_calendar.end.value,
     name: configRaw.name,
   };
